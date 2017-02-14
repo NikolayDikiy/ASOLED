@@ -73,16 +73,16 @@ void loop()
         LD.printString_6x8(",-./:;<=>?@[\\]^_`{|}~", 0, 1);
         LD.printString_6x8("ABCDEFGHIJKLMNOPQRSTU", 0, 2);
         LD.printString_6x8("VWXYZabcdefghijklmnop",0, 3);
-        LD.printString_6x8("qrstuvwxyzÀÁÂÃÄÅ¨ÆÇÈÉ", 0, 4);
-        LD.printString_6x8("ÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞ", 0, 5);
-        LD.printString_6x8("ßàáâãäå¸æçèéêëìíîïğñò", 0, 6);
-        LD.printString_6x8("óôõö÷øùúûüışÿ¯¿¡¢§°±µ", 0, 7);
+        LD.printString_6x8("qrstuvwxyzĞĞ‘Ğ’Ğ“Ğ”Ğ•ĞĞ–Ğ—Ğ˜Ğ™", 0, 4);
+        LD.printString_6x8("ĞšĞ›ĞœĞĞĞŸĞ Ğ¡Ğ¢Ğ£Ğ¤Ğ¥Ğ¦Ğ§Ğ¨Ğ©ĞªĞ«Ğ¬Ğ­Ğ®", 0, 5);
+        LD.printString_6x8("Ğ¯Ğ°Ğ±Ğ²Ğ³Ğ´ĞµÑ‘Ğ¶Ğ·Ğ¸Ğ¹ĞºĞ»Ğ¼Ğ½Ğ¾Ğ¿Ñ€ÑÑ‚", 0, 6);
+        LD.printString_6x8("ÑƒÑ„Ñ…Ñ†Ñ‡ÑˆÑ‰ÑŠÑ‹ÑŒÑÑÑĞ‡Ñ—ĞÑÂ§Â°Â±Âµ", 0, 7);
         break;
     case 1:
         LD.printString_12x16("012345%&'+", 0, 0);
         LD.printString_12x16("ABCDEFGHIJ", 0, 2);
-        LD.printString_12x16("vwxyzÀÁÂÅ¨", 0, 4);
-        LD.printString_12x16("şÿ¯¿¡¢§°±µ", 0, 6);
+        LD.printString_12x16("vwxyzĞĞ‘Ğ’Ğ•Ğ", 0, 4);
+        LD.printString_12x16("ÑÑĞ‡Ñ—ĞÑÂ§Â°Â±Âµ", 0, 6);
         break;
     case 2:
         for (int i = 0; i < 128; i++){
