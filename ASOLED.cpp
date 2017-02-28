@@ -132,7 +132,7 @@ void ASOLED::printChar(char C){ // write to temp string for numbers
   NumberString[LenString] = 0;
 }
 
-void ASOLED::printString_6x8(const char *String, byte X, byte Y, byte inverted){
+void ASOLED::printString_6x8(const char *String, byte X, byte Y, const char inverted){
   CurrFont = Font_6x8;
  	setCursorXY(X, Y);
 	while(*String){
@@ -165,7 +165,7 @@ unsigned int EnlardeByte2Word(char b)
 	return d;
 }
 
-void ASOLED::printString_12x16(const char *String, byte X, byte Y, byte inverted){
+void ASOLED::printString_12x16(const char *String, byte X, byte Y, const char inverted){
   CurrFont = Font_12x16;
   setCursorXY(X, Y);
   const char *String0 = String;
@@ -212,17 +212,8 @@ void ASOLED::printString_12x16(const char *String, byte X, byte Y, byte inverted
   }
   setCursorXY(CurrX, CurrY-1);
 }
-      /*
-void ASOLED::printString(const char *String, byte X, byte Y)  // Current font
-{
-  if(CurrFont == Font_6x8)
-    printString_6x8(String, X, Y);
-  else
-    printString_12x16(String, X, Y);
-   
-}       */
 
-void ASOLED::printString(const char *String, byte X, byte Y, byte inverted)  // Print inverted string with current font
+void ASOLED::printString(const char *String, byte X, byte Y, const char inverted)  // Print inverted string with current font
 {
   if(inverted == NORMAL){
     if(CurrFont == Font_6x8)
