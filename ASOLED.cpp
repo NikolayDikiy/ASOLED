@@ -132,17 +132,25 @@ void ASOLED::printChar(char C){ // write to temp string for numbers
   NumberString[LenString] = 0;
 }
 
-void ASOLED::printString_6x8(const char *String, byte X, byte Y){
+void ASOLED::printString_6x8(const char *String, byte X, byte Y, byte inverted){
   CurrFont = Font_6x8;
  	setCursorXY(X, Y);
 	while(*String){
 		unsigned char c = RecodeUTF_ASA(*String++);
 		if (c != 255) {                   //			printChar6(c);
-      sendData(0);
-      for(byte i=0; i<5; i++)
-        sendData(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
-      CurrX += 6;
-		}
+      if (inverted == NORMAL){
+        sendData(0);
+        for(byte i=0; i<5; i++)
+          sendData(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
+        CurrX += 6;
+      }
+		  else {
+        sendData(0xff);
+        for(byte i=0; i<5; i++)
+          sendData(~(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4])));
+        CurrX += 6;    
+      }
+    }
 	}
 }
 
@@ -157,7 +165,7 @@ unsigned int EnlardeByte2Word(char b)
 	return d;
 }
 
-void ASOLED::printString_12x16(const char *String, byte X, byte Y){
+void ASOLED::printString_12x16(const char *String, byte X, byte Y, byte inverted){
   CurrFont = Font_12x16;
   setCursorXY(X, Y);
   const char *String0 = String;
@@ -204,13 +212,30 @@ void ASOLED::printString_12x16(const char *String, byte X, byte Y){
   }
   setCursorXY(CurrX, CurrY-1);
 }
-
+      /*
 void ASOLED::printString(const char *String, byte X, byte Y)  // Current font
 {
   if(CurrFont == Font_6x8)
     printString_6x8(String, X, Y);
   else
     printString_12x16(String, X, Y);
+   
+}       */
+
+void ASOLED::printString(const char *String, byte X, byte Y, byte inverted)  // Print inverted string with current font
+{
+  if(inverted == NORMAL){
+    if(CurrFont == Font_6x8)
+      printString_6x8(String, X, Y, NORMAL);
+    else
+      printString_12x16(String, X, Y, NORMAL);
+  }
+  else if(inverted == INVERTED){
+    if(CurrFont == Font_6x8)
+      printString_6x8(String, X, Y, INVERTED);
+    else
+      printString_12x16(String, X, Y, INVERTED);
+  }
    
 }
 

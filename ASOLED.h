@@ -23,15 +23,18 @@
 #define Font_6x8            1
 #define Font_12x16          2
 
+#define NORMAL              0
+#define INVERTED            1
+
 
 class ASOLED {
 
 public:
   void init();
   void setFont(const char font); // set current font size (CurrFont) [Font_6x8 | Font_12x16]
-	void printString(const char *String, byte X=255, byte Y=255);  // Current font
-	void printString_6x8(const char *String, byte X=255, byte Y=255);  // font 6x8, switch CurrFont to Font_6x8
-  void printString_12x16(const char *String, byte X=255, byte Y=255);  // font 12x16, switch CurrFont to Font_12x16
+  void printString(const char *String, byte X=255, byte Y=255, byte inverted=0);  // Print inverted or normal string with current font
+	void printString_6x8(const char *String, byte X=255, byte Y=255, byte inverted=0);  //  font 6x8, switch CurrFont to Font_6x8
+  void printString_12x16(const char *String, byte X=255, byte Y=255, byte inverted=0);  // font 12x16, switch CurrFont to Font_12x16
 
 	byte printNumber(long n, byte X=255, byte Y=255); // current font
 	byte printNumber(float float_num, byte prec=6, byte Y=255, byte numChar=255); // current font
