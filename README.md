@@ -1,5 +1,4 @@
 # ASOLED
-Just for test and use with aquacontroller
 Библиотека для i2c 128х64 OLED дисплея на базе SSD1306.
 Ветка на форуме, где была выложена автором: http://arduino.ru/forum/programmirovanie/kirillitsa-na-displee-ili-chto-ya-delayu-ne-tak
 Новая версия от автора: http://arduino.ru/forum/proekty/asoled-kompaktnaya-biblioteka-dlya-oled-displeya-128kh64-s-kirillitsei-utf-8
