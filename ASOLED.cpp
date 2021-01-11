@@ -120,6 +120,17 @@ void ASOLED::sendCommand(byte command){
 	Wire.endTransmission();    // stop transmitting
 }
 
+void ASOLED::SetNormalOrientation() { // pins on top 
+    LD.sendCommand(0xA1);
+    LD.sendCommand(0xC8);
+}
+
+void ASOLED::SetTurnedOrientation() { // pins on bottom
+    LD.sendCommand(0xA0);
+    LD.sendCommand(0xC0);
+}
+  
+
 void ASOLED::sendData(byte data){
 	Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
 	Wire.write(ASA_OLED_DATA_MODE);//data mode
@@ -138,12 +149,33 @@ void ASOLED::printString_6x8(const char *String, byte X, byte Y){
 	while(*String){
 		unsigned char c = RecodeUTF_ASA(*String++);
 		if (c != 255) {                   //			printChar6(c);
-      sendData(0);
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      Wire.write(textMode);
       for(byte i=0; i<5; i++)
-        sendData(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
+        Wire.write(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4])^textMode);
       CurrX += 6;
+      Wire.endTransmission();    // stop transmitting
 		}
 	}
+}
+
+void ASOLED::printString_6x8(const __FlashStringHelper *ifsh, byte X, byte Y){
+  CurrFont = Font_6x8;
+   setCursorXY(X, Y);
+  PGM_P p = reinterpret_cast<PGM_P>(ifsh);
+  while(pgm_read_byte(p)){
+    unsigned char c = RecodeUTF_ASA(pgm_read_byte(p++));
+    if (c != 255) {                   //      printChar6(c);
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      Wire.write(textMode);
+      for(byte i=0; i<5; i++)
+        Wire.write(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4])^textMode);
+      CurrX += 6;
+      Wire.endTransmission();    // stop transmitting
+    }
+  }
 }
 
 unsigned int EnlardeByte2Word(char b)
@@ -167,19 +199,22 @@ void ASOLED::printString_12x16(const char *String, byte X, byte Y){
     unsigned char c = RecodeUTF_ASA(*String++);
     if (c != 255)
     {
-      if(tmpX < (ASOLED_Max_X - 2)) {
-        sendData(0);
-        sendData(0);
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      if(tmpX < (ASOLED_Max_X - 1)) {
+        Wire.write(textMode);
+        Wire.write(textMode);
         tmpX += 2;
       }
       for(byte i=0; i<5; i++) {
-        if(tmpX < (ASOLED_Max_X - 2)) {
+        if(tmpX < (ASOLED_Max_X - 1)) {
           m = EnlardeByte2Word(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
-          sendData(lowByte(m));
-          sendData(lowByte(m));
+          Wire.write(lowByte(m)^textMode);
+          Wire.write(lowByte(m)^textMode);
           tmpX += 2;
         }
       }
+      Wire.endTransmission();    // stop transmitting
     } 
   }
   setCursorXY(CurrX, CurrY+1);
@@ -187,19 +222,78 @@ void ASOLED::printString_12x16(const char *String, byte X, byte Y){
     unsigned char c = RecodeUTF_ASA(*String0++);
     if (c != 255)
     {
-      if(CurrX < (ASOLED_Max_X - 2)) {
-        sendData(0);
-        sendData(0);
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      if(CurrX < (ASOLED_Max_X - 1)) {
+        Wire.write(textMode);
+        Wire.write(textMode);
         CurrX += 2;
       }
       for(byte i=0; i<5; i++) {
-        if(CurrX < (ASOLED_Max_X - 2)) {
+        if(CurrX < (ASOLED_Max_X - 1)) {
           m = EnlardeByte2Word(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
-          sendData(highByte(m));
-          sendData(highByte(m));
+          Wire.write(highByte(m)^textMode);
+          Wire.write(highByte(m)^textMode);
           CurrX += 2;
         }
       }
+      Wire.endTransmission();    // stop transmitting
+    } 
+  }
+  setCursorXY(CurrX, CurrY-1);
+}
+
+void ASOLED::printString_12x16(const __FlashStringHelper *ifsh, byte X, byte Y){
+  CurrFont = Font_12x16;
+  setCursorXY(X, Y);
+  const __FlashStringHelper *ifsh0 =  ifsh;
+  PGM_P p = reinterpret_cast<PGM_P>(ifsh);
+  unsigned int m = 0;
+  byte tmpX = CurrX;
+  while(pgm_read_byte(p)){                               // print upper half of the string
+    unsigned char c = RecodeUTF_ASA(pgm_read_byte(p++));
+    if (c != 255)
+    {
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      if(tmpX < (ASOLED_Max_X - 1)) {
+        Wire.write(textMode);
+        Wire.write(textMode);
+        tmpX += 2;
+      }
+      for(byte i=0; i<5; i++) {
+        if(tmpX < (ASOLED_Max_X - 1)) {
+          m = EnlardeByte2Word(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
+          Wire.write(lowByte(m)^textMode);
+          Wire.write(lowByte(m)^textMode);
+          tmpX += 2;
+        }
+      }
+      Wire.endTransmission();    // stop transmitting
+    } 
+  }
+  setCursorXY(CurrX, CurrY+1);
+  p = reinterpret_cast<PGM_P>(ifsh0);
+  while(pgm_read_byte(p)){                               // print lower half of the string
+    unsigned char c = RecodeUTF_ASA(pgm_read_byte(p++));
+    if (c != 255)
+    {
+      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+      Wire.write(ASA_OLED_DATA_MODE);//data mode
+      if(CurrX < (ASOLED_Max_X - 1)) {
+        Wire.write(textMode);
+        Wire.write(textMode);
+        CurrX += 2;
+      }
+      for(byte i=0; i<5; i++) {
+        if(CurrX < (ASOLED_Max_X - 1)) {
+          m = EnlardeByte2Word(pgm_read_byte(&SmallFont[(c-32)*(int)5 + i + 4]));
+          Wire.write(highByte(m)^textMode);
+          Wire.write(highByte(m)^textMode);
+          CurrX += 2;
+        }
+      }
+      Wire.endTransmission();    // stop transmitting
     } 
   }
   setCursorXY(CurrX, CurrY-1);
@@ -210,8 +304,15 @@ void ASOLED::printString(const char *String, byte X, byte Y)  // Current font
   if(CurrFont == Font_6x8)
     printString_6x8(String, X, Y);
   else
-    printString_12x16(String, X, Y);
-   
+    printString_12x16(String, X, Y);   
+}
+
+void ASOLED::printString(const __FlashStringHelper *ifsh, byte X, byte Y)  // Current font
+{
+  if(CurrFont == Font_6x8)
+    printString_6x8(ifsh, X, Y);
+  else
+    printString_12x16(ifsh, X, Y);   
 }
 
 byte ASOLED::printNumber(long long_num, byte X, byte Y){
@@ -294,8 +395,18 @@ void ASOLED::drawBitmap(const byte *bitmaparray, byte X, byte Y, byte width, byt
 // max height = 8
   for (int j = 0; j <  height; j++) {
     setCursorXY(X, Y + lowByte(j));
-    for (byte i = 0; i < width; i++)    
-      sendData(pgm_read_byte(bitmaparray + i + 4 + j*width));
+    Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+    Wire.write(ASA_OLED_DATA_MODE);//data mode
+    for (byte i = 0; i < width; i++){
+      if((i % 16) == 15)
+      {
+        Wire.endTransmission();    // stop transmitting
+        Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+        Wire.write(ASA_OLED_DATA_MODE);//data mode
+      }
+      Wire.write(pgm_read_byte(bitmaparray + i + 4 + j*width));
+    }
+    Wire.endTransmission();    // stop transmitting
   }
 }
 
@@ -304,8 +415,18 @@ void ASOLED::drawBitmap(const byte *bitmaparray, byte X, byte Y){
   byte height = pgm_read_byte(&bitmaparray[1])/8;
   for (int j = 0; j <  height; j++) {
     setCursorXY(X, Y + lowByte(j));
-    for (byte i = 0; i < width; i++)    
-      sendData(pgm_read_byte(bitmaparray + i + 4 + j*width));
+    Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+    Wire.write(ASA_OLED_DATA_MODE);//data mode
+    for (byte i = 0; i < width; i++)    {
+      if((i % 16) == 15)
+      {
+        Wire.endTransmission();    // stop transmitting
+        Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+        Wire.write(ASA_OLED_DATA_MODE);//data mode
+      }
+      Wire.write(pgm_read_byte(bitmaparray + i + 4 + j*width));
+    }
+    Wire.endTransmission();    // stop transmitting
   }
 }
 
@@ -400,39 +521,42 @@ void ASOLED::VertBar(int Num, int Val, int MinVal, int MaxVal)
 void ASOLED::init(){
 	Wire.begin();
 	// upgrade to 400KHz! (only use when your other i2c device support this speed)
+#ifndef __SAM3X8E__
 	if (I2C_400KHZ){
 		// save I2C bitrate (default 100Khz)
 		byte twbrbackup = TWBR;
 		TWBR = 12; 
 	}
-	
+#else
+	Wire.setClock(400000); 
+#endif
 	setPageMode();	// default addressing mode
 	clearDisplay();
 	setCursorXY(0,0);
 	
 // Additional command
 	LD.setPowerOff();
-	LD.sendCommand(ASA_SET_DISPLAY_CLOCK_DIV_RATIO);
-	LD.sendCommand(0x80);
-	LD.sendCommand(ASA_SET_MULTIPLEX_RATIO);
-	LD.sendCommand(0x3F);
-	LD.sendCommand(ASA_SET_DISPLAY_OFFSET);
-	LD.sendCommand(0x0);
-	LD.sendCommand(ASA_SET_START_LINE | 0x0);
-	LD.sendCommand(ASA_CHARGE_PUMP);
-		LD.sendCommand(0x14);
-	LD.sendCommand(ASA_MEMORY_ADDR_MODE);
-	LD.sendCommand(0x00);
-	LD.sendCommand(ASA_SET_SEGMENT_REMAP | 0x1);
-	LD.sendCommand(ASA_COM_SCAN_DIR_DEC);
-	LD.sendCommand(ASA_SET_COM_PINS);
-	LD.sendCommand(0x12);
-	LD.setBrightness(0xCF);
-	LD.sendCommand(ASA_SET_PRECHARGE_PERIOD);
-		LD.sendCommand(0xF1);
-	LD.sendCommand(ASA_SET_VCOM_DESELECT);
-	LD.sendCommand(0x40);
-	LD.sendCommand(ASA_DISPLAY_ALL_ON_RESUME);
+	LD.sendCommand(ASA_SET_DISPLAY_CLOCK_DIV_RATIO);  // D5
+	LD.sendCommand(0x80);                             // 80
+	LD.sendCommand(ASA_SET_MULTIPLEX_RATIO);          // A8
+	LD.sendCommand(0x3F);                             // 3F
+	LD.sendCommand(ASA_SET_DISPLAY_OFFSET);           // D3
+	LD.sendCommand(0x0);                              //  0
+	LD.sendCommand(ASA_SET_START_LINE | 0x0);         // 40
+	LD.sendCommand(ASA_CHARGE_PUMP);                  // 8D
+		LD.sendCommand(0x14);                        // 14
+	LD.sendCommand(ASA_MEMORY_ADDR_MODE);             // 20
+	LD.sendCommand(0x00);                             //  0
+	LD.sendCommand(ASA_SET_SEGMENT_REMAP | 0x1);      // A1 (A0+1)
+	LD.sendCommand(ASA_COM_SCAN_DIR_DEC);             // C8
+	LD.sendCommand(ASA_SET_COM_PINS);                 // DA
+	LD.sendCommand(0x12);                             // 12
+	LD.setBrightness(0xCF);                           // CF
+	LD.sendCommand(ASA_SET_PRECHARGE_PERIOD);         // D9
+		LD.sendCommand(0xF1);                        // F1
+	LD.sendCommand(ASA_SET_VCOM_DESELECT);            // DB
+	LD.sendCommand(0x40);                             // 40
+	LD.sendCommand(ASA_DISPLAY_ALL_ON_RESUME);        // A4
 	LD.setNormalDisplay();
 	LD.setPowerOn();
 }
@@ -442,8 +566,13 @@ void ASOLED::setCursorXY(byte X, byte Y){
 // X - 1 unit = 1 pixel columns
   if (X < 128)
     if ((X != CurrX) || (Y != CurrY)){
+#ifdef _SH1106_
+      sendCommand(0x00 + ((X+2) & 0x0F)); 		//set column lower address
+      sendCommand(0x10 + (((X+2)>>4)&0x0F)); 	//set column higher address
+#else
       sendCommand(0x00 + (X & 0x0F)); 		//set column lower address
       sendCommand(0x10 + ((X>>4)&0x0F)); 	//set column higher address
+#endif
       sendCommand(0xB0 + Y); 					//set page address
       CurrX = X;
       CurrY = Y;
@@ -456,14 +585,66 @@ void ASOLED::setFont(const char font)
 }
 
 void ASOLED::clearDisplay()	{
-	for(byte page=0; page<8; page++) {	
-		setCursorXY(0, page);     
-		for(byte column=0; column<128; column++)  //clear all columns
-			sendData(0);    
-	}
-	setCursorXY(0,0);
+//  Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+//  Wire.write(ASA_OLED_DATA_MODE);//data mode
+//  Wire.write(data);
+//  Wire.endTransmission();    // stop transmitting
+//	for(byte page=0; page<8; page++) {	
+//		setCursorXY(0, page);     
+//		for(byte column=0; column<128; column++)  //clear all columns
+//			sendData(0);    
+//	}
+//	setCursorXY(0,0);
+////    setCursorXY(0,0);
+////    for(byte j = 0; j < 64; j++) {
+////      Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+////      Wire.write(ASA_OLED_DATA_MODE);//data mode
+////      for(byte i = 0; i < 16; i++)
+////        Wire.write(0);
+////      Wire.endTransmission();    // stop transmitting
+////    }
+////    setCursorXY(0,0);
+//  byte width  = 128;
+//  byte height = 8;
+  for (byte j = 0; j <  8; j++) {
+    setCursorXY(0, j);
+    Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+    Wire.write(ASA_OLED_DATA_MODE);//data mode
+    for (byte i = 0; i < 128; i++)    {
+      if((i % 16) == 15)
+      {
+        Wire.endTransmission();    // stop transmitting
+        Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+        Wire.write(ASA_OLED_DATA_MODE);//data mode
+      }
+      Wire.write(0);
+    }
+    Wire.endTransmission();    // stop transmitting
+  }
 }
 
+/*=========================================
+void ASOLED::drawBitmap(const byte *bitmaparray, byte X, byte Y){
+  byte width  = pgm_read_byte(&bitmaparray[0]);
+  byte height = pgm_read_byte(&bitmaparray[1])/8;
+  for (int j = 0; j <  height; j++) {
+    setCursorXY(X, Y + lowByte(j));
+    Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+    Wire.write(ASA_OLED_DATA_MODE);//data mode
+    for (byte i = 0; i < width; i++)    {
+      if((i % 16) == 15)
+      {
+        Wire.endTransmission();    // stop transmitting
+        Wire.beginTransmission(OLED_ADDRESS); // begin transmitting
+        Wire.write(ASA_OLED_DATA_MODE);//data mode
+      }
+      Wire.write(pgm_read_byte(bitmaparray + i + 4 + j*width));
+    }
+    Wire.endTransmission();    // stop transmitting
+  }
+}
+
+=========================================*/
 
 void ASOLED::setInverseDisplay(){
 	sendCommand(ASA_OLED_CMD_INVERSE_DISPLAY);
@@ -471,6 +652,16 @@ void ASOLED::setInverseDisplay(){
 
 void ASOLED::setNormalDisplay(){
 	sendCommand(ASA_OLED_CMD_NORMAL_DISPLAY);
+}
+
+void ASOLED::SetInverseText() // next string will draw inverse
+{
+  textMode = 0xff;  
+}
+
+void ASOLED::SetNormalText() // next string will draw normal
+{
+  textMode = 0;  
 }
 
 void ASOLED::setPowerOff(){
